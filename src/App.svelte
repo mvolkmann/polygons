@@ -37,12 +37,10 @@
     polygons = polygons; // trigger reactivity
   }
 
-  function multiply(leftMatrix, rightMatrix) {
-    return leftMatrix.map(row => multiplyRow(row, rightMatrix));
-  }
-
-  function multiplyRow(row, column) {
-    return row.map((v, index) => v * column[index]).reduce((acc, v) => acc + v);
+  function matrixMultiply(left, right) {
+    return left.map(row =>
+      row.map((v, index) => v * right[index]).reduce((acc, v) => acc + v)
+    );
   }
 
   function newPolygon() {
@@ -68,7 +66,7 @@
     for (let polygon of polygons) {
       for (const point of polygon) {
         const rightMatrix = [point.x, point.y, 1];
-        const [x, y] = multiply(leftMatrix, rightMatrix);
+        const [x, y] = matrixMultiply(leftMatrix, rightMatrix);
         point.x = x;
         point.y = y;
       }
