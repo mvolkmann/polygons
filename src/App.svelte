@@ -2,10 +2,13 @@
   import {onMount} from 'svelte';
 
   const HEIGHT = 900;
-  const WIDTH = 1000;
+  const POLYGONS = 500;
   const RADIANS_PER_DEGREE = Math.PI / 180;
+  const SIZE_PERCENT = 25;
+  const WIDTH = 1000;
 
   let angle = 0;
+  let box;
   let center = {x: WIDTH / 2, y: HEIGHT / 2};
   let polygon = [];
   let polygons = [polygon];
@@ -16,6 +19,11 @@
   onMount(() => {
     svg.style.setProperty('--width', WIDTH);
     svg.style.setProperty('--height', HEIGHT);
+    box = svg.getBoundingClientRect();
+
+    for (let i = 0; i < POLYGONS; i++) {
+      randomPolygon();
+    }
   });
 
   function addPoint(x, y) {
@@ -34,13 +42,6 @@
     return polygon.map(({x, y}) => `${x},${y}`).join(' ');
   }
 
-  function onClick(event) {
-    const box = svg.getBoundingClientRect();
-    addPoint(event.clientX - box.left, event.clientY - box.top);
-    polygon = polygon; // trigger reactivity
-    polygons = polygons; // trigger reactivity
-  }
-
   function matrixMultiply(left, right) {
     return left.map(row =>
       row.map((v, index) => v * right[index]).reduce((acc, v) => acc + v)
@@ -55,8 +56,27 @@
     }
   }
 
+  function onClick(event) {
+    addPoint(event.clientX - box.left, event.clientY - box.top);
+    polygon = polygon; // trigger reactivity
+    polygons = polygons; // trigger reactivity
+  }
+
+  const randomInt = max => Math.ceil(Math.random() * max);
+
   function randomPolygon() {
-    const points = Math.ceil(Math.rand() * 20);
+    let factor = (100 - SIZE_PERCENT) / 100;
+    const dx = randomInt(box.width * factor);
+    const dy = randomInt(box.height * factor);
+
+    const points = 3; //2 + randomInt(3);
+
+    factor = SIZE_PERCENT / 100;
+    for (let i = 0; i < points; i++) {
+      const x = randomInt(box.width * factor);
+      const y = randomInt(box.height * factor);
+      addPoint(dx + x, dy + y);
+    }
     newPolygon();
   }
 
@@ -109,7 +129,7 @@
         <polygon points={getPoints(polygon)} />
       {/if}
       {#each polygon as point}
-        <circle cx={point.x} cy={point.y} r={5} />
+        <circle cx={point.x} cy={point.y} r={2} />
       {/each}
     {/each}
     <circle class="center" cx={center.x} cy={center.y} r={5} />
