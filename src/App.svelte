@@ -1,7 +1,7 @@
 <script>
   import {onMount} from 'svelte';
 
-  const HEIGHT = 350;
+  const HEIGHT = 900;
   const WIDTH = 1000;
   const RADIANS_PER_DEGREE = Math.PI / 180;
 
@@ -18,21 +18,25 @@
     svg.style.setProperty('--height', HEIGHT);
   });
 
+  function addPoint(x, y) {
+    let point = svg.createSVGPoint();
+    point.x = x;
+    point.y = y;
+
+    // Convert from screen coordinates to SVG coordinates.
+    const ctm = svg.getCTM().inverse();
+    point = point.matrixTransform(ctm);
+
+    polygon.push(point);
+  }
+
   function getPoints(polygon) {
     return polygon.map(({x, y}) => `${x},${y}`).join(' ');
   }
 
   function onClick(event) {
     const box = svg.getBoundingClientRect();
-    var point = svg.createSVGPoint();
-    point.x = event.clientX - box.left;
-    point.y = event.clientY - box.top;
-
-    // Convert from screen coordinates to SVG coordinates.
-    var ctm = svg.getCTM().inverse();
-    point = point.matrixTransform(ctm);
-
-    polygon.push(point);
+    addPoint(event.clientX - box.left, event.clientY - box.top);
     polygon = polygon; // trigger reactivity
     polygons = polygons; // trigger reactivity
   }
@@ -49,6 +53,11 @@
       polygons.push(polygon);
       polygons = polygons; // trigger reactivity
     }
+  }
+
+  function randomPolygon() {
+    const points = Math.ceil(Math.rand() * 20);
+    newPolygon();
   }
 
   function rotate(event) {
